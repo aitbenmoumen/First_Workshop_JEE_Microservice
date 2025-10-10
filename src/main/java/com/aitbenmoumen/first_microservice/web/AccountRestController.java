@@ -1,7 +1,10 @@
 package com.aitbenmoumen.first_microservice.web;
 
+import com.aitbenmoumen.first_microservice.dto.BankAccountRequestDTO;
+import com.aitbenmoumen.first_microservice.dto.BankAccountResponseDTO;
 import com.aitbenmoumen.first_microservice.entities.BankAccount;
 import com.aitbenmoumen.first_microservice.repositories.BankAccountRepository;
+import com.aitbenmoumen.first_microservice.services.BankAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/bankAccounts")
-@RequiredArgsConstructor
+@RequiredArgsConstructor // FIXED: Re-added @RequiredArgsConstructor for cleaner dependency injection
 public class AccountRestController {
 
     private final BankAccountRepository bankAccountRepository;
+    private final BankAccountService bankAccountService;
+
+    // REMOVED: Manual constructor since @RequiredArgsConstructor handles dependency injection automatically
 
     @GetMapping
     public ResponseEntity<List<BankAccount>> getBankAccounts() {
@@ -29,9 +35,9 @@ public class AccountRestController {
     }
 
     @PostMapping
-    public ResponseEntity<BankAccount> createBankAccount(@RequestBody BankAccount bankAccount) {
-        BankAccount saved = bankAccountRepository.save(bankAccount);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<BankAccountResponseDTO> createBankAccount(@RequestBody BankAccountRequestDTO bankAccount) {
+        BankAccountResponseDTO b = bankAccountService.addAccount(bankAccount);
+        return ResponseEntity.ok(b);
     }
 
     @PutMapping("/{id}")
@@ -42,7 +48,10 @@ public class AccountRestController {
 
         if (bankAccount.getType() != null) existing.setType(bankAccount.getType());
         if (bankAccount.getBalance() != null) existing.setBalance(bankAccount.getBalance());
-        if (bankAccount.getCurrency().isEmpty()) existing.setCurrency(bankAccount.getCurrency());
+        if (bankAccount.getCurrency() != null && !bankAccount.getCurrency().isBlank()) {
+            existing.setCurrency(bankAccount.getCurrency());
+        }
+
         if (bankAccount.getCreatedAt() != null) existing.setCreatedAt(bankAccount.getCreatedAt());
 
         BankAccount updated = bankAccountRepository.save(existing);

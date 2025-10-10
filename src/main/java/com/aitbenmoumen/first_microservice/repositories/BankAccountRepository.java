@@ -11,6 +11,6 @@ import java.util.List;
 
 @RepositoryRestResource
 public interface BankAccountRepository extends JpaRepository<BankAccount, String> {
-    @RestResource(path = "/bytype") // allows you to call the method not by it's name (security)
+    @RestResource(path = "/bytype") // allows you to call the method not by it s name (security)
     List<BankAccount> findByType(@Param("t") AccountType type); // mask the attribute name
 }
